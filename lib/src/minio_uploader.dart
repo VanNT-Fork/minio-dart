@@ -47,13 +47,7 @@ class MinioUploader implements StreamConsumer<Uint8List> {
   Future addStream(Stream<Uint8List> stream) async {
     await for (var chunk in stream) {
       List<int>? md5digest;
-      final headers = <String, String>{};
-      headers.addAll(metadata);
-      headers['Content-Length'] = chunk.length.toString();
-      if (!client.enableSHA256) {
-        md5digest = md5.convert(chunk).bytes;
-        headers['Content-MD5'] = base64.encode(md5digest);
-      }
+      final headers = getHeaders(chunk);
 
       if (_partNumber == 1 && chunk.length < partSize) {
         _etag = await _uploadChunk(chunk, headers, null);

@@ -1,0 +1,9 @@
+https://github.com/minio/minio/discussions/15021
+
+Full set of commands to obtain the required values:
+
+$ dd if=/dev/urandom of=secret.key bs=32  count=1    // Generate 256-bit key and store it in secret.key
+$ openssl base64 -in secret.key
+1Z5Gk19ZHaBnEDYY38t+5ELi4psS88yYSeiRjMBNuz4=        // Base64 encoded representation of the key
+$ openssl dgst -md5 -binary secret.key | base64
+TyDcJSKWyngiuQAAYR/1Ng==                             // Base64 encoded MD5 digest of the key

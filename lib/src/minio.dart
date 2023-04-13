@@ -312,8 +312,12 @@ class Minio {
   }
 
   /// get a readable stream of the object content.
-  Future<MinioByteStream> getObject(String bucket, String object) {
-    return getPartialObject(bucket, object, null, null);
+  Future<MinioByteStream> getObject(
+    String bucket,
+    String object, {
+    Map<String, String>? headers,
+  }) {
+    return getPartialObject(bucket, object, null, null, headers);
   }
 
   /// get a readable stream of the partial object content.
@@ -322,6 +326,7 @@ class Minio {
     String object, [
     int? offset,
     int? length,
+    Map<String, String>? headers,
   ]) async {
     assert(offset == null || offset >= 0);
     assert(length == null || length > 0);
@@ -342,7 +347,10 @@ class Minio {
       }
     }
 
-    final headers = range != null ? {'range': range} : null;
+    if (range != null) {
+      headers ??= <String, String>{};
+      headers['range'] = range;
+    }
     final expectedStatus = range != null ? 206 : 200;
 
     final resp = await _client.requestStream(
@@ -881,6 +889,7 @@ class Minio {
     int? expires,
     String? resource,
     Map<String, String>? reqParams,
+    Map<String, String>? reqHeaders,
     DateTime? requestDate,
   }) async {
     MinioInvalidBucketNameError.check(bucket);
@@ -902,7 +911,7 @@ class Minio {
       region,
       resource,
       reqParams,
-      {},
+      reqHeaders ?? {},
       null,
     );
     return presignSignatureV4(this, request, region, requestDate, expires);
@@ -916,6 +925,7 @@ class Minio {
     int? size,
     int? chunkSize,
     Map<String, String>? metadata,
+    Map<String, String>? headers,
     void Function(int)? onProgress,
   }) async {
     MinioInvalidBucketNameError.check(bucket);
@@ -930,6 +940,9 @@ class Minio {
     }
 
     metadata = prependXAMZMeta(metadata ?? <String, String>{});
+    if (headers != null) {
+      metadata.addAll(headers);
+    }
 
     final partSize = chunkSize ?? _calculatePartSize(size ?? maxObjectSize);
 

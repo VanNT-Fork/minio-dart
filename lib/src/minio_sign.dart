@@ -31,9 +31,9 @@ List<String> getSignedHeaders(Iterable<String> headers) {
     'authorization',
     'content-length',
     'content-type',
-    'user-agent'
+    'user-agent',
   };
-  final result = headers.where((header) => !ignored.contains(header)).toList();
+  final result = headers.where((header) => !ignored.contains(header) && !header.contains('X-Amz-Server-Side-Encryption')).toList();
   result.sort();
   return result;
 }
